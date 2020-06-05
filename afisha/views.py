@@ -1,7 +1,10 @@
+import json
 from django.http import HttpResponse
+from django.http import JsonResponse
 from django.template import loader
 from django.shortcuts import render
-from places.models import Place
+from places.models import Place, PlaceImage
+from django.shortcuts import get_object_or_404
 
 
 def make_feature_for_geojson(place):
@@ -38,3 +41,21 @@ def index(request):
 	}
 
 	return render(request, 'index.html', context)
+
+
+def place_detail(request, place_id):
+	place = get_object_or_404(Place, pk=place_id)
+	place_images = PlaceImage.objects.filter(place__pk=place_id)
+
+	serialized_place = {
+		"title": "Экскурсионная компания «Легенды Москвы»",
+		"imgs": [image.image.url for image in place_images],
+		"description_short": place.description_short,
+		"description_long": place.description_long,
+		"coordinates": {
+			"lat": place.latitude,
+			"lng": place.longitude
+		}
+	}
+
+	return JsonResponse(serialized_place, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
