@@ -1,14 +1,16 @@
 import os
-import mimetypes
-
-mimetypes.add_type("image/svg+xml", ".svg", True)
+from dotenv import load_dotenv
+from environ import Env
+load_dotenv()
+env = Env()
+env.read_env()
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = '_&o=ynfa!yn$tpwil#(i2(qr$j10dc&kjnj2k4k&s2&w#%gx41'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = True
+DEBUG = env.bool("DEBUG", False)
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.pythonanywhere.com']
 
@@ -91,6 +93,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
 	os.path.join(BASE_DIR, 'static'),
 ]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_URL = '/media/'
 
