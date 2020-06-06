@@ -5,6 +5,7 @@ from django.template import loader
 from django.shortcuts import render
 from places.models import Place, PlaceImage
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 
 
 def make_feature_for_geojson(place):
@@ -17,7 +18,7 @@ def make_feature_for_geojson(place):
 		"properties": {
 			"title": place.title,
 			"placeId": place.pk,
-			"detailsUrl": "static/places/roofs24.json",
+			"detailsUrl": reverse(place_detail, args=[place.pk]),
 		}
 	}
 	return feature
@@ -48,7 +49,7 @@ def place_detail(request, place_id):
 	place_images = PlaceImage.objects.filter(place__pk=place_id)
 
 	serialized_place = {
-		"title": "Экскурсионная компания «Легенды Москвы»",
+		"title": place.title,
 		"imgs": [image.image.url for image in place_images],
 		"description_short": place.description_short,
 		"description_long": place.description_long,
