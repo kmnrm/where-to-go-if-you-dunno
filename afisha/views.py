@@ -1,7 +1,4 @@
-import json
-from django.http import HttpResponse
 from django.http import JsonResponse
-from django.template import loader
 from django.shortcuts import render
 from places.models import Place, PlaceImage
 from django.shortcuts import get_object_or_404
@@ -33,7 +30,6 @@ def index(request):
 	}
 
 	for place in places:
-		print(place.title)
 		feature = make_feature_for_geojson(place)
 		places_geojson["features"].append(feature)
 
