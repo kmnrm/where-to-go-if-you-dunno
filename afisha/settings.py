@@ -1,16 +1,12 @@
 import os
 from dotenv import load_dotenv
-from environ import Env
 load_dotenv()
-env = Env()
-env.read_env()
-
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = env.bool("DEBUG", False)
+DEBUG = os.getenv("DEBUG") in ('1', 'true', 'True', 'TRUE')
 
 ALLOWED_HOSTS = ['.pythonanywhere.com']
 
