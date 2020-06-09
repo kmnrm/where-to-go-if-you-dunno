@@ -1,22 +1,40 @@
 # Куда пойти — Москва глазами Артёма
 
-Фронтенд для будущего сайта о самых интересных местах в Москве. Авторский проект Артёма.
+Сайт о самых интересных местах в Москве. Авторский проект Артёма.
 
 ![Куда пойти](screenshots/site.png)
 
-[Демка сайта](https://devmanorg.github.io/where-to-go-frontend/).
+[Рабочая версия сайта](http://kmnrm.pythonanywhere.com/).
 
 ## Как запустить
 
 - Скачайте код
-- Перейдите в каталог проекта с файлом `index.html`
-- Запустите веб-сервер
-- Откройте в браузере
+- В каталоге с проектом создайте файл `.env`, добавьте  `SECRET_KEY` и установите включите режим отладки:
+    ```
+    SECRET_KEY=your_secret_key
+    DEBUG=True
+    ```
+- Установите зависимости командой `pip install -r requirements.txt`
+- Откройте файл `settings.py` в каталоге `afisha` и добавьте `localhost` в `ALLOWED_HOSTS`:
+    ```
+    ALLOWED_HOSTS = ['localhost']
+    ```
+- Запустите сервер командой `python3 manage.py runserver`
+- Откройте в браузере [http://localhost:8000](http://localhost:8000/)
 
-В качестве веб-сервера можно использовать что угодно. Например, подойдёт даже самый простой встроенный в Python веб-сервер:
-
+При удачном запуске в терминале Вы увидете следующее:
 ```sh
-$ python -m http.server 8000
+$ python manage.py runserver
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+June 01, 2001 - 18:29:15
+Django version 3.0.7, using settings 'afisha.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CTRL-BREAK.
+[01/Jun/2001 18:29:25] "GET / HTTP/1.1" 200 15389
+
 ```
 
 ## Настройки
@@ -29,70 +47,51 @@ $ python -m http.server 8000
 
 Если что-то работает не так, как ожидалось, то начните с включения отладочного режима логгирования.
 
-## Формат данных
+## API
 
-Фронтенд получает данные из двух источников. Первый источник — это JSON, запечённый внутрь HTML. Он содержит полный список объектов на карте. И он прячется внутри тега `script`:
+JSON данные о заведении можно получить по адресу
+` http://localhost:800/places/{place_id}/ `, где `{place_id}` - это соответсвующий значению в БД `id` заведения.
 
-```js
-<script id="places-geojson" type="application/json">
-  {
-    "type": "FeatureCollection",
-    "features": [
-      {
-        "type": "Feature",
-        "geometry": {
-          "type": "Point",
-          "coordinates": [37.62, 55.793676]
-        },
-        "properties": {
-          // Специфичные для этого сайта данные
-          "title": "Легенды Москвы",
-          "placeId": "moscow_legends",
-          "detailsUrl": "places/moscow_legends.json"
-        }
-      },
-      // ...
-    ]
-  }
-</script>
+Так выглядят [данные об Останкинской телебашне](http://localhost:8000/places/24/) с `id=24`:
+![API Останкино](screenshots/api_id24.png)
+
+### Загрузка данных
+Ссылки на данные для сайта можно найти в [этом репозитории](https://github.com/devmanorg/where-to-go-places).
+
+Для загрузки данных о заведениях города на сайт используется команда:
+
+```sh
+$ python manage.py load_place https://github.com/devmanorg/where-to-go-places
+```
+При успешной загрузке данных после запуска команды в терминале появится сообщение:
+```sh
+Successfully added places from https://github.com/devmanorg/where-to-go-places
 ```
 
-При загрузке страницы JS код ищет тег с id `places-geojson`, считывает содержимое и помещает все объекты на карту.
+Загрузить свои данные можно также из панели администратора. Для этого:
+ - создайте профиль администратора командой `python manage.py createsuperuser`
+  - введите данные для логина при входе в [админку](http://localhost:8000/admin).
+  - в разделе Places выберите `+ADD PLACE`
 
-Данные записаны в формате [GeoJSON](https://ru.wikipedia.org/wiki/GeoJSON). Все поля здесь стандартные, кроме `properties`. Внутри `properties` лежат специфичные для проекта данные:
+    ![Добавить заведение](screenshots/admin_addplace.png)
 
-- `title` — название локации
-- `placeId` — уникальный идентификатор локации, строка или число
-- `detailsUrl` — адрес для скачивания доп. сведений о локации в JSON формате
+При добавлении изображений следует учитывать, что первое изображение в списке будет заглавным для заведения на сайте. Остальные окажутся в галерее:
+![Порядок фото в админке](screenshots/admin_images.png)
 
-Значение поля `placeId` может быть либо строкой, либо числом. Само значение не играет большой роли, важна лишь чтобы оно было уникальным. Фронтенд использует `placeId` чтобы избавиться от дубликатов — если у двух локаций одинаковый `placeId`, то значит это одно и то же место.
 
-Второй источник данных — это те самые адреса в поле `detailsUrl` c подробными сведениями о локации. Каждый раз, когда пользователь выбирает локацию на карте JS код отправляет запрос на сервер и получает картинки, текст и прочую информацию об объекте. Формат ответа сервера такой:
+![Порядок фото на главной](screenshots/site_images.png)
 
-```js
-{
-    "title": "Экскурсионный проект «Крыши24.рф»",
-    "imgs": [
-        "https://kudago.com/media/images/place/d0/f6/d0f665a80d1d8d110826ba797569df02.jpg",
-        "https://kudago.com/media/images/place/66/23/6623e6c8e93727c9b0bb198972d9e9fa.jpg",
-        "https://kudago.com/media/images/place/64/82/64827b20010de8430bfc4fb14e786c19.jpg",
-    ],
-    "description_short": "Хотите увидеть Москву с высоты птичьего полёта?",
-    "description_long": "<p>Проект «Крыши24.рф» проводит экскурсии ...</p>",
-    "coordinates": {
-        "lat": 55.753676,
-        "lng": 37.64
-    }
-}
-```
-
+Порядок можно менять непосредственно в админке с помощью drag-n-drop.
 
 ## Используемые библиотеки
+Сайт создан с помощью фреймворка [Django](https://www.djangoproject.com/).
 
+Для фронтенда были использованы следующие библиотеки:
 - [Leaflet](https://leafletjs.com/) — отрисовка карты
 - [loglevel](https://www.npmjs.com/package/loglevel) для логгирования
 - [Bootstrap](https://getbootstrap.com/) — CSS библиотека
 - [Vue.js](https://ru.vuejs.org/) — реактивные шаблоны на фронтенде
+
 
 ## Цели проекта
 
