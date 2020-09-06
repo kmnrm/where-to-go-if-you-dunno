@@ -6,53 +6,53 @@ from django.urls import reverse
 
 
 def make_feature_for_geojson(place):
-	feature = {
-		"type": "Feature",
-		"geometry": {
-			"type": "Point",
-			"coordinates": [place.longitude, place.latitude],
-		},
-		"properties": {
-			"title": place.title,
-			"placeId": place.pk,
-			"detailsUrl": reverse(place_detail, args=[place.pk]),
-		}
-	}
-	return feature
+    feature = {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [place.longitude, place.latitude],
+        },
+        "properties": {
+            "title": place.title,
+            "placeId": place.pk,
+            "detailsUrl": reverse(place_detail, args=[place.pk]),
+        }
+    }
+    return feature
 
 
 def index(request):
-	places = Place.objects.all()
+    places = Place.objects.all()
 
-	places_geojson = {
-		"type": "FeatureCollection",
-		"features": [],
-	}
+    places_geojson = {
+        "type": "FeatureCollection",
+        "features": [],
+    }
 
-	for place in places:
-		feature = make_feature_for_geojson(place)
-		places_geojson["features"].append(feature)
+    for place in places:
+        feature = make_feature_for_geojson(place)
+        places_geojson["features"].append(feature)
 
-	context = {
-		"places_geojson": places_geojson,
-	}
+    context = {
+        "places_geojson": places_geojson,
+    }
 
-	return render(request, 'index.html', context)
+    return render(request, 'index.html', context)
 
 
 def place_detail(request, place_id):
-	place = get_object_or_404(Place, pk=place_id)
-	place_images = PlaceImage.objects.filter(place__pk=place_id)
+    place = get_object_or_404(Place, pk=place_id)
+    place_images = PlaceImage.objects.filter(place__pk=place_id)
 
-	serialized_place = {
-		"title": place.title,
-		"imgs": [image.image.url for image in place_images],
-		"description_short": place.description_short,
-		"description_long": place.description_long,
-		"coordinates": {
-			"lat": place.latitude,
-			"lng": place.longitude
-		}
-	}
+    serialized_place = {
+        "title": place.title,
+        "imgs": [image.image.url for image in place_images],
+        "description_short": place.description_short,
+        "description_long": place.description_long,
+        "coordinates": {
+            "lat": place.latitude,
+            "lng": place.longitude
+        }
+    }
 
-	return JsonResponse(serialized_place, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
+    return JsonResponse(serialized_place, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 4})
