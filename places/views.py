@@ -42,13 +42,12 @@ def index(request):
 
 def place_detail(request, place_id):
     place = get_object_or_404(Place, pk=place_id)
-    place_images = PlaceImage.objects.filter(place__pk=place_id)
 
     serialized_place = {
         "title": place.title,
-        "imgs": [image.image.url for image in place_images],
-        "description_short": place.description_short,
-        "description_long": place.description_long,
+        "imgs": [image.image.url for image in place.images.all()],
+        "description_short": place.short_description,
+        "description_long": place.long_description,
         "coordinates": {
             "lat": place.latitude,
             "lng": place.longitude
