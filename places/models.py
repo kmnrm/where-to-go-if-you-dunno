@@ -4,8 +4,10 @@ from tinymce.models import HTMLField
 
 class Place(models.Model):
     title = models.CharField(max_length=200, db_index=True)
-    description_short = models.TextField('Краткое описание', blank=True)
-    description_long = HTMLField('Подробное описание', blank=True)
+    short_description = models.TextField('Краткое описание', blank=True)
+    long_description = HTMLField('Подробное описание', blank=True)
+    #to pelid: тогда почему в уроке про риэлтора в django orm у вас поле называется owner_phone_pure, а не owner_pure_phone_number?
+    # https://dvmn.org/modules/django-orm/lesson/filtering-products/#13
     latitude = models.FloatField('Координаты широты')
     longitude = models.FloatField('Координаты долготы')
 
